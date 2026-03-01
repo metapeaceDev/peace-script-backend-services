@@ -1,0 +1,36 @@
+# Root workspace repo ignore rules
+# Keep this outer repo clean; actual app repo is under ./peace-script-basic-v1
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.vscode/
+
+# Nested application repository (managed by its own .git)
+peace-script-basic-v1/
+
+# Root helper artifacts (managed elsewhere)
+functions/
+scripts/
+package.json
+package-lock.json
+
+# Secrets
+functions/.env
+*.env
+
+# Python virtual envs
+.venv/
+venv/
+env/
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini
