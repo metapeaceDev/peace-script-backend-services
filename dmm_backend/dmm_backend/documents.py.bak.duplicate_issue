@@ -1,0 +1,132 @@
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from beanie import Document
+from pydantic import BaseModel, Field
+from pydantic import model_validator
+
+# Re-export P0 documents from documents_extra to provide a stable import path
+try:
+    from .documents_extra import (
+        DreamJournal as _DreamJournal,
+        SimulationTimeline as _SimulationTimeline,
+        SimulationEvent as _SimulationEvent,
+    )
+    DreamJournal = _DreamJournal
+    SimulationTimeline = _SimulationTimeline
+    SimulationEvent = _SimulationEvent
+except Exception:
+    # In minimal contexts, these may be unavailable (e.g., during bootstrap tests)
+    pass
+
+# Fallback definitions if re-exports are not available
+if 'DreamJournal' not in globals():
+    class DreamJournal(Document):
+        model_id: Optional[str] = None
+        date: datetime = Field(default_factory=datetime.utcnow)
+        dream_text: str
+        tags: List[str] = Field(default_factory=list)
+        emotion_score: Optional[float] = None
+        ai_summary: Optional[str] = None
+        meta: Dict[str, Any] = Field(default_factory=dict)
+
+        class Settings:
+            name = "dream_journals"
+
+        model_config = {"extra": "allow", "populate_by_name": True}
+
+if 'SimulationEvent' not in globals():
+    class SimulationEvent(BaseModel):
+        timestamp: datetime = Field(default_factory=datetime.utcnow)
+        type: str
+        payload: Dict[str, Any] = Field(default_factory=dict)
+
+if 'SimulationTimeline' not in globals():
+    class SimulationTimeline(Document):
+        model_id: Optional[str] = None
+        simulation_id: Optional[str] = None
+        timeline_type: str = "physical"
+        events: List[SimulationEvent] = Field(default_factory=list)
+        start_time: datetime = Field(default_factory=datetime.utcnow)
+        end_time: Optional[datetime] = None
+        playback_mode: str = "real"
+        meta: Dict[str, Any] = Field(default_factory=dict)
+
+        class Settings:
+            name = "simulation_timelines"
+
+        model_config = {"extra": "allow", "populate_by_name": True}
+
+# --- Re-usable Pydantic Models for nesting --- #
+
+class StimulusObject(BaseModel):
+    type: str
+    source: str
+    intensity: float
+    details: str
+
+class ConflictAnalysis(BaseModel):
+    initial_kilesa_force: float
+    final_kilesa_force: float
+    parami_force: float
+    sati_intervened: bool
+    panna_intervened: bool
+
+class ReactionOutcome(BaseModel):
+    resulting_citta: str
+    is_wholesome: bool
+    conflict_analysis: ConflictAnalysis
+
+class ProfileChange(BaseModel):
+    target: str
+    change: str
+
+class Consequence(BaseModel):
+    new_kamma_id: Optional[str] = None
+    profile_changes: List[ProfileChange]
+
+# --- Beanie Document Models --- #
+
+class DigitalMindModel(Document):
+    model_id: str
+    name: str
+    status_label: str
+    overall_level: int
+    level_progress_percent: float = 0.0
+    image_url: str
+    core_state: Dict[str, Any]
+    conscious_profile: Dict[str, Any]
+    kamma_profile: Dict[str, Any]
+
+    class Settings:
+        name = "digital_mind_models"
+
+    # Allow unknown fields (e.g., core_profile) in test/seed payloads
+    model_config = {"extra": "allow"}
+
+    @model_validator(mode="before")
+    @classmethod
+    def _ensure_defaults(cls, data):
+        if isinstance(data, dict):
+            data.setdefault("level_progress_percent", 0.0)
+        return data
+
+class KammaLogEntry(Document):
+    model_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    event_type: str
+    description: str
+    impact_level: int
+    context: Dict[str, Any]
+
+    class Settings:
+        name = "kamma_logs"
+
+class TrainingLog(Document):
+    model_id: str
+    training_type: str
+    date: datetime = Field(default_factory=datetime.utcnow)
+    details: Dict[str, Any]
+
+    class Settings:
+        name = "training_logs"

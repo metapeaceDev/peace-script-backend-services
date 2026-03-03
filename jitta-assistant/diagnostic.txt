@@ -1,0 +1,4 @@
+CWD: C:\Users\USER\Desktop\peace-script-basic-v1\jitta-assistant
+sys.path: ['C:\\Users\\USER\\Desktop\\peace-script-basic-v1\\jitta-assistant', 'C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python310\\python310.zip', 'C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python310\\DLLs', 'C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python310\\lib', 'C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python310', 'C:\\Users\\USER\\Desktop\\peace-script-basic-v1\\.venv', 'C:\\Users\\USER\\Desktop\\peace-script-basic-v1\\.venv\\lib\\site-packages']
+Successfully imported app
+Successfully imported AppConfig

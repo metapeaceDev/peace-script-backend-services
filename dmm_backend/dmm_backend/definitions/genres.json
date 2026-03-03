@@ -1,0 +1,507 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-11-19",
+  "description": "Peace Script Genre Definitions - 11 Main Genres + 11 Secondary Genres",
+  "main_genres": [
+    {
+      "id": "DRAMA",
+      "name_en": "Drama",
+      "name_th": "ดราม่า",
+      "description_en": "Stories focusing on emotional conflicts, relationships, and character development",
+      "description_th": "เรื่องราวที่เน้นความขัดแย้งทางอารมณ์ ความสัมพันธ์ และการพัฒนาตัวละคร",
+      "keywords": ["emotional", "conflict", "relationships", "character-driven", "realistic"],
+      "dhamma_themes": [
+        "THEME_METTA_LOVE",
+        "THEME_KARUNA_COMPASSION",
+        "THEME_MUDITA_JOY",
+        "THEME_UPEKKHA_EQUANIMITY"
+      ],
+      "typical_percentage_range": [30, 100],
+      "examples": [
+        "Parasite (2019)",
+        "Moonlight (2016)",
+        "Marriage Story (2019)",
+        "กลิ่นเหงื่อและน้ำหอม (1987)"
+      ],
+      "production_notes": "Requires strong character development, emotional scenes, dialogue-heavy",
+      "pali_reference": "dukkha (suffering), sukha (happiness), vedanā (feelings)"
+    },
+    {
+      "id": "COMEDY",
+      "name_en": "Comedy",
+      "name_th": "ตลก",
+      "description_en": "Stories designed to entertain and amuse through humor",
+      "description_th": "เรื่องราวที่ออกแบบมาเพื่อสร้างความบันเทิงและความขำขันผ่านอารมณ์ขัน",
+      "keywords": ["humor", "entertaining", "lighthearted", "funny", "satire"],
+      "dhamma_themes": [
+        "THEME_MUDITA_JOY",
+        "THEME_METTA_LOVE",
+        "THEME_UPEKKHA_EQUANIMITY"
+      ],
+      "typical_percentage_range": [20, 100],
+      "examples": [
+        "The Grand Budapest Hotel (2014)",
+        "Jojo Rabbit (2019)",
+        "แฟนฉันต้องมี (2003)",
+        "ฮาวทูทิ้ง..ทิ้งอย่างไรไม่ให้เหลือเธอ (2012)"
+      ],
+      "production_notes": "Requires timing, comedic actors, creative editing",
+      "pali_reference": "pīti (joy), somanassa (gladness)"
+    },
+    {
+      "id": "ACTION",
+      "name_en": "Action",
+      "name_th": "แอ็กชัน",
+      "description_en": "Fast-paced stories featuring physical feats, chases, and battles",
+      "description_th": "เรื่องราวที่มีจังหวะเร็ว มีการแสดงความสามารถทางกายภาพ การไล่ล่า และการต่อสู้",
+      "keywords": ["fast-paced", "stunts", "fighting", "chase", "physical"],
+      "dhamma_themes": [
+        "THEME_VIRIYA_EFFORT",
+        "THEME_SATI_MINDFULNESS",
+        "THEME_ADHITTHANA_DETERMINATION"
+      ],
+      "typical_percentage_range": [20, 80],
+      "examples": [
+        "Mad Max: Fury Road (2015)",
+        "John Wick (2014)",
+        "องค์บาก (2003)",
+        "ต้มยำกุ้ง (2005)"
+      ],
+      "production_notes": "Requires stunt coordinators, safety equipment, action choreography",
+      "pali_reference": "viriya (energy), paggaha (exertion)"
+    },
+    {
+      "id": "HORROR",
+      "name_en": "Horror",
+      "name_th": "สยองขวัญ",
+      "description_en": "Stories designed to frighten, shock, or disgust audiences",
+      "description_th": "เรื่องราวที่ออกแบบมาเพื่อทำให้ผู้ชมกลัว ตกใจ หรือรู้สึกขยะแขยง",
+      "keywords": ["fear", "supernatural", "suspense", "terror", "disturbing"],
+      "dhamma_themes": [
+        "THEME_SATI_MINDFULNESS",
+        "THEME_KARUNA_COMPASSION",
+        "THEME_DUKKHA_SUFFERING"
+      ],
+      "typical_percentage_range": [30, 100],
+      "examples": [
+        "The Conjuring (2013)",
+        "Get Out (2017)",
+        "ชัตเตอร์ (2004)",
+        "พี่มาก..พระโขนง (2013)"
+      ],
+      "production_notes": "Requires special effects, sound design, atmospheric lighting",
+      "pali_reference": "bhaya (fear), bherava (terror), paṭigha (aversion)"
+    },
+    {
+      "id": "SCIFI",
+      "name_en": "Science Fiction",
+      "name_th": "วิทยาศาสตร์",
+      "description_en": "Stories featuring futuristic settings, advanced technology, or scientific concepts",
+      "description_th": "เรื่องราวที่มีฉากอนาคต เทคโนโลยีขั้นสูง หรือแนวคิดทางวิทยาศาสตร์",
+      "keywords": ["futuristic", "technology", "space", "scientific", "dystopian"],
+      "dhamma_themes": [
+        "THEME_ANICCA_IMPERMANENCE",
+        "THEME_ANATTA_NONSELF",
+        "THEME_PANNA_WISDOM"
+      ],
+      "typical_percentage_range": [40, 100],
+      "examples": [
+        "Blade Runner 2049 (2017)",
+        "Arrival (2016)",
+        "Interstellar (2014)",
+        "The Matrix (1999)"
+      ],
+      "production_notes": "Requires VFX, production design, world-building",
+      "pali_reference": "vijjā (knowledge), paññā (wisdom)"
+    },
+    {
+      "id": "ROMANCE",
+      "name_en": "Romance",
+      "name_th": "โรแมนติก",
+      "description_en": "Stories centered on romantic love and relationships",
+      "description_th": "เรื่องราวที่มีจุดศูนย์กลางอยู่ที่ความรักและความสัมพันธ์แบบโรแมนติก",
+      "keywords": ["love", "relationships", "passion", "emotional", "heartfelt"],
+      "dhamma_themes": [
+        "THEME_METTA_LOVE",
+        "THEME_KARUNA_COMPASSION",
+        "THEME_MUDITA_JOY",
+        "THEME_TANHA_CRAVING"
+      ],
+      "typical_percentage_range": [30, 100],
+      "examples": [
+        "La La Land (2016)",
+        "The Notebook (2004)",
+        "เพื่อนสนิท (1983)",
+        "รักแห่งสยาม (2007)"
+      ],
+      "production_notes": "Requires chemistry between leads, romantic settings, emotional scenes",
+      "pali_reference": "mettā (loving-kindness), pema (love), taṇhā (craving)"
+    },
+    {
+      "id": "THRILLER",
+      "name_en": "Thriller",
+      "name_th": "ระทึกขวัญ",
+      "description_en": "Suspenseful stories designed to keep audiences on edge",
+      "description_th": "เรื่องราวที่สร้างความตึงเครียดและทำให้ผู้ชมลุ้นตลอดเวลา",
+      "keywords": ["suspense", "tension", "mystery", "conspiracy", "psychological"],
+      "dhamma_themes": [
+        "THEME_SATI_MINDFULNESS",
+        "THEME_PANNA_WISDOM",
+        "THEME_DUKKHA_SUFFERING"
+      ],
+      "typical_percentage_range": [30, 80],
+      "examples": [
+        "Gone Girl (2014)",
+        "Shutter Island (2010)",
+        "บางกอกแดนเจอรัส (2008)",
+        "ฉลาดเกมส์โกง (2017)"
+      ],
+      "production_notes": "Requires pacing, plot twists, atmospheric tension",
+      "pali_reference": "vitakka (applied thought), vicāra (sustained thought)"
+    },
+    {
+      "id": "FANTASY",
+      "name_en": "Fantasy",
+      "name_th": "แฟนตาซี",
+      "description_en": "Stories featuring magical or supernatural elements in imaginary worlds",
+      "description_th": "เรื่องราวที่มีองค์ประกอบเวทมนตร์หรือเหนือธรรมชาติในโลกที่สร้างขึ้น",
+      "keywords": ["magical", "supernatural", "mythical", "imaginary", "epic"],
+      "dhamma_themes": [
+        "THEME_VIRIYA_EFFORT",
+        "THEME_SADDHA_FAITH",
+        "THEME_PANNA_WISDOM"
+      ],
+      "typical_percentage_range": [40, 100],
+      "examples": [
+        "The Lord of the Rings (2001-2003)",
+        "Harry Potter series",
+        "Pan's Labyrinth (2006)",
+        "นาคี (2016)"
+      ],
+      "production_notes": "Requires VFX, creature design, world-building, costumes",
+      "pali_reference": "iddhi (magical power), abhiññā (higher knowledge)"
+    },
+    {
+      "id": "MYSTERY",
+      "name_en": "Mystery",
+      "name_th": "ปริศนา",
+      "description_en": "Stories centered on solving puzzles or uncovering secrets",
+      "description_th": "เรื่องราวที่มีจุดศูนย์กลางอยู่ที่การแก้ปริศนาหรือเปิดเผยความลับ",
+      "keywords": ["detective", "investigation", "puzzle", "clues", "whodunit"],
+      "dhamma_themes": [
+        "THEME_PANNA_WISDOM",
+        "THEME_SATI_MINDFULNESS",
+        "THEME_VICAYA_INVESTIGATION"
+      ],
+      "typical_percentage_range": [20, 70],
+      "examples": [
+        "Knives Out (2019)",
+        "Sherlock Holmes (2009)",
+        "เมย์ไหน..ไฟแรงเฟร่อ (1984)",
+        "โกงกระดาน (2016)"
+      ],
+      "production_notes": "Requires intricate plotting, clue placement, reveal timing",
+      "pali_reference": "dhammavicaya (investigation of truth), sampajañña (clear comprehension)"
+    },
+    {
+      "id": "ADVENTURE",
+      "name_en": "Adventure",
+      "name_th": "ผจญภัย",
+      "description_en": "Stories featuring exciting journeys and exploration",
+      "description_th": "เรื่องราวที่มีการเดินทางที่น่าตื่นเต้นและการสำรวจ",
+      "keywords": ["journey", "exploration", "quest", "exotic", "heroic"],
+      "dhamma_themes": [
+        "THEME_VIRIYA_EFFORT",
+        "THEME_ADHITTHANA_DETERMINATION",
+        "THEME_SATI_MINDFULNESS"
+      ],
+      "typical_percentage_range": [30, 80],
+      "examples": [
+        "Indiana Jones series",
+        "The Revenant (2015)",
+        "Pirates of the Caribbean (2003)",
+        "ในนา (2011)"
+      ],
+      "production_notes": "Requires location shoots, stunts, travel logistics",
+      "pali_reference": "padhāna (effort), ussāha (exertion)"
+    },
+    {
+      "id": "ANIMATION",
+      "name_en": "Animation",
+      "name_th": "แอนิเมชัน",
+      "description_en": "Stories told through animated sequences (2D, 3D, stop-motion)",
+      "description_th": "เรื่องราวที่เล่าผ่านการเคลื่อนไหวแบบแอนิเมชัน (2D, 3D, สต็อปโมชัน)",
+      "keywords": ["animated", "cartoon", "family-friendly", "imaginative", "artistic"],
+      "dhamma_themes": [
+        "THEME_MUDITA_JOY",
+        "THEME_METTA_LOVE",
+        "THEME_PANNA_WISDOM"
+      ],
+      "typical_percentage_range": [100, 100],
+      "examples": [
+        "Spirited Away (2001)",
+        "Coco (2017)",
+        "Spider-Man: Into the Spider-Verse (2018)",
+        "ยักษ์ (2012)"
+      ],
+      "production_notes": "Requires animators, voice actors, rendering time",
+      "pali_reference": "kāya (form), rūpa (materiality), nimitta (mental image)"
+    }
+  ],
+  "secondary_genres": [
+    {
+      "id": "SOCIAL",
+      "name_en": "Social Drama",
+      "name_th": "สังคม",
+      "description_en": "Stories examining social issues and class structures",
+      "description_th": "เรื่องราวที่วิเคราะห์ปัญหาสังคมและโครงสร้างชนชั้น",
+      "keywords": ["social-commentary", "class", "inequality", "political", "society"],
+      "dhamma_themes": [
+        "THEME_KARUNA_COMPASSION",
+        "THEME_METTA_LOVE",
+        "THEME_DUKKHA_SUFFERING"
+      ],
+      "typical_percentage_range": [10, 50],
+      "examples": [
+        "Parasite (2019)",
+        "Sorry to Bother You (2018)",
+        "ตี 3 (1997)",
+        "แบด จีเนียส (2017)"
+      ],
+      "production_notes": "Requires social research, authentic representation",
+      "pali_reference": "karuṇā (compassion), samaññatā (equality)"
+    },
+    {
+      "id": "PSYCHOLOGICAL",
+      "name_en": "Psychological",
+      "name_th": "จิตวิทยา",
+      "description_en": "Stories exploring mental states and psychological complexity",
+      "description_th": "เรื่องราวที่สำรวจสภาวะจิตใจและความซับซ้อนทางจิตวิทยา",
+      "keywords": ["mind", "psyche", "internal-conflict", "mental-health", "consciousness"],
+      "dhamma_themes": [
+        "THEME_SATI_MINDFULNESS",
+        "THEME_ANATTA_NONSELF",
+        "THEME_CITTA_CONSCIOUSNESS"
+      ],
+      "typical_percentage_range": [15, 60],
+      "examples": [
+        "Black Swan (2010)",
+        "Shutter Island (2010)",
+        "อาปัติ (2015)",
+        "เดอะกิฟต์ (2016)"
+      ],
+      "production_notes": "Requires nuanced performances, visual metaphors",
+      "pali_reference": "citta (consciousness), vedanā (feeling), manasikāra (attention)"
+    },
+    {
+      "id": "CRIME",
+      "name_en": "Crime",
+      "name_th": "อาชญากรรม",
+      "description_en": "Stories centered on criminal activities and law enforcement",
+      "description_th": "เรื่องราวที่มีจุดศูนย์กลางอยู่ที่กิจกรรมอาชญากรรมและการบังคับใช้กฎหมาย",
+      "keywords": ["gangster", "heist", "police", "detective", "criminal"],
+      "dhamma_themes": [
+        "THEME_SILA_MORALITY",
+        "THEME_KAMMA_ACTION",
+        "THEME_DUKKHA_SUFFERING"
+      ],
+      "typical_percentage_range": [20, 60],
+      "examples": [
+        "The Godfather (1972)",
+        "Heat (1995)",
+        "องค์บาก 3 (2010)",
+        "วัยเป้ง (2009)"
+      ],
+      "production_notes": "Requires action sequences, authentic details",
+      "pali_reference": "kamma (action), sīla (morality), duccarita (bad conduct)"
+    },
+    {
+      "id": "WAR",
+      "name_en": "War",
+      "name_th": "สงคราม",
+      "description_en": "Stories set in wartime or depicting military conflict",
+      "description_th": "เรื่องราวที่มีฉากในยุคสงครามหรือแสดงความขัดแย้งทางทหาร",
+      "keywords": ["military", "battle", "soldiers", "combat", "conflict"],
+      "dhamma_themes": [
+        "THEME_DUKKHA_SUFFERING",
+        "THEME_KARUNA_COMPASSION",
+        "THEME_AHIMSA_NONVIOLENCE"
+      ],
+      "typical_percentage_range": [20, 70],
+      "examples": [
+        "1917 (2019)",
+        "Dunkirk (2017)",
+        "บางระจัน (2000)",
+        "สุริโยทัย (2001)"
+      ],
+      "production_notes": "Requires battle choreography, period accuracy, large scale",
+      "pali_reference": "saṅgāma (battle), dukkha (suffering), ahiṃsā (non-harming)"
+    },
+    {
+      "id": "WESTERN",
+      "name_en": "Western",
+      "name_th": "คาวบอย",
+      "description_en": "Stories set in American Old West frontier",
+      "description_th": "เรื่องราวที่มีฉากในดินแดนชายแดนตะวันตกอเมริกาสมัยเก่า",
+      "keywords": ["frontier", "cowboys", "outlaws", "gunfight", "wilderness"],
+      "dhamma_themes": [
+        "THEME_SILA_MORALITY",
+        "THEME_VIRIYA_EFFORT",
+        "THEME_ADHITTHANA_DETERMINATION"
+      ],
+      "typical_percentage_range": [30, 100],
+      "examples": [
+        "The Good, the Bad and the Ugly (1966)",
+        "Django Unchained (2012)",
+        "True Grit (2010)",
+        "The Revenant (2015)"
+      ],
+      "production_notes": "Requires period costumes, western settings, horse handling",
+      "pali_reference": "sīla (morality), dhamma (righteousness)"
+    },
+    {
+      "id": "MUSICAL",
+      "name_en": "Musical",
+      "name_th": "มิวสิคัล",
+      "description_en": "Stories told partly through song and dance",
+      "description_th": "เรื่องราวที่เล่าผ่านเพลงและการเต้นรำเป็นส่วนหนึ่ง",
+      "keywords": ["songs", "dance", "choreography", "performance", "theatrical"],
+      "dhamma_themes": [
+        "THEME_MUDITA_JOY",
+        "THEME_PITI_RAPTURE",
+        "THEME_METTA_LOVE"
+      ],
+      "typical_percentage_range": [50, 100],
+      "examples": [
+        "La La Land (2016)",
+        "The Greatest Showman (2017)",
+        "มนต์รักเพลงสวรรค์ (1995)",
+        "หอมรบกวน (2009)"
+      ],
+      "production_notes": "Requires choreographers, musical numbers, singing actors",
+      "pali_reference": "pīti (rapture), somanassa (joy), gīta (song)"
+    },
+    {
+      "id": "SPORTS",
+      "name_en": "Sports",
+      "name_th": "กีฬา",
+      "description_en": "Stories centered on athletic competition and training",
+      "description_th": "เรื่องราวที่มีจุดศูนย์กลางอยู่ที่การแข่งขันกีฬาและการฝึกซ้อม",
+      "keywords": ["athletics", "competition", "training", "team", "victory"],
+      "dhamma_themes": [
+        "THEME_VIRIYA_EFFORT",
+        "THEME_ADHITTHANA_DETERMINATION",
+        "THEME_SATI_MINDFULNESS"
+      ],
+      "typical_percentage_range": [40, 100],
+      "examples": [
+        "Rocky (1976)",
+        "Creed (2015)",
+        "ชุด (2005)",
+        "ตีสาม คืนสาม 3D (2014)"
+      ],
+      "production_notes": "Requires athletic training, sports choreography, competition scenes",
+      "pali_reference": "viriya (energy), padhāna (exertion), adhiṭṭhāna (determination)"
+    },
+    {
+      "id": "HISTORICAL",
+      "name_en": "Historical",
+      "name_th": "ประวัติศาสตร์",
+      "description_en": "Stories set in specific historical periods",
+      "description_th": "เรื่องราวที่มีฉากในช่วงเวลาประวัติศาสตร์ที่เฉพาะเจาะจง",
+      "keywords": ["period-piece", "historical-events", "based-on-true-story", "era", "costume"],
+      "dhamma_themes": [
+        "THEME_ANICCA_IMPERMANENCE",
+        "THEME_KAMMA_ACTION",
+        "THEME_PANNA_WISDOM"
+      ],
+      "typical_percentage_range": [20, 70],
+      "examples": [
+        "Schindler's List (1993)",
+        "12 Years a Slave (2013)",
+        "สุริโยทัย (2001)",
+        "พระมหาชนก (2013)"
+      ],
+      "production_notes": "Requires historical research, period costumes, authentic sets",
+      "pali_reference": "atīta (past), paṭiccasamuppāda (dependent origination)"
+    },
+    {
+      "id": "BIOGRAPHICAL",
+      "name_en": "Biographical",
+      "name_th": "ชีวประวัติ",
+      "description_en": "Stories based on real people's lives",
+      "description_th": "เรื่องราวที่มีพื้นฐานจากชีวิตของบุคคลจริง",
+      "keywords": ["biopic", "real-person", "life-story", "based-on-true-story", "memoir"],
+      "dhamma_themes": [
+        "THEME_KAMMA_ACTION",
+        "THEME_PANNA_WISDOM",
+        "THEME_VIRIYA_EFFORT"
+      ],
+      "typical_percentage_range": [30, 80],
+      "examples": [
+        "Bohemian Rhapsody (2018)",
+        "The Theory of Everything (2014)",
+        "ยิ้ม (2005)",
+        "สังข์ทอง (2018)"
+      ],
+      "production_notes": "Requires research, rights clearance, authentic representation",
+      "pali_reference": "jīvita (life), carita (conduct), kamma (action)"
+    },
+    {
+      "id": "EXPERIMENTAL",
+      "name_en": "Experimental",
+      "name_th": "ทดลอง",
+      "description_en": "Unconventional stories pushing boundaries of filmmaking",
+      "description_th": "เรื่องราวที่ไม่ธรรมดาซึ่งท้าทายขอบเขตของการทำภาพยนตร์",
+      "keywords": ["avant-garde", "unconventional", "artistic", "abstract", "innovative"],
+      "dhamma_themes": [
+        "THEME_PANNA_WISDOM",
+        "THEME_ANATTA_NONSELF",
+        "THEME_SUNYATA_EMPTINESS"
+      ],
+      "typical_percentage_range": [10, 40],
+      "examples": [
+        "2001: A Space Odyssey (1968)",
+        "The Tree of Life (2011)",
+        "Uncle Boonmee (2010)",
+        "Cemetery of Splendour (2015)"
+      ],
+      "production_notes": "Requires artistic vision, flexible production, festival circuits",
+      "pali_reference": "vipassanā (insight), suññatā (emptiness), paññā (wisdom)"
+    },
+    {
+      "id": "NOIR",
+      "name_en": "Film Noir",
+      "name_th": "นัวร์",
+      "description_en": "Dark, cynical crime dramas with moral ambiguity",
+      "description_th": "ดราม่าอาชญากรรมที่มืดมนและมีความคลุมเครือทางศีลธรรม",
+      "keywords": ["dark", "cynical", "femme-fatale", "moral-ambiguity", "stylized"],
+      "dhamma_themes": [
+        "THEME_DUKKHA_SUFFERING",
+        "THEME_TANHA_CRAVING",
+        "THEME_MOHA_DELUSION"
+      ],
+      "typical_percentage_range": [20, 60],
+      "examples": [
+        "Blade Runner (1982)",
+        "Sin City (2005)",
+        "Drive (2011)",
+        "Only God Forgives (2013)"
+      ],
+      "production_notes": "Requires specific lighting, atmosphere, moral complexity",
+      "pali_reference": "moha (delusion), taṇhā (craving), avijjā (ignorance)"
+    }
+  ],
+  "metadata": {
+    "total_main_genres": 11,
+    "total_secondary_genres": 11,
+    "total_genres": 22,
+    "usage_notes": "Main genres can be used as primary (30-100%), Secondary genres typically used as supporting elements (10-60%)",
+    "validation_rules": {
+      "percentage_sum": 100,
+      "min_genres": 1,
+      "max_genres": 5,
+      "recommended_genres": "2-3 for clarity"
+    }
+  }
+}

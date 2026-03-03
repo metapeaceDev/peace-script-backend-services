@@ -1,0 +1,337 @@
+"""
+NarrativeStructure Scene Router
+
+This module implements CRUD operations for screenplay scenes.
+Scenes are the core building blocks of the narrative structure.
+
+Author: Peace Script Team
+Date: 25 October 2025
+Version: 1.0
+"""
+
+from fastapi import APIRouter, HTTPException, status, Query
+from beanie import PydanticObjectId
+from typing import List, Optional
+from datetime import datetime
+
+from documents_narrative import Scene, Project
+from schemas_narrative import SceneCreate, SceneUpdate, SceneResponse
+
+
+router = APIRouter(
+    prefix="/api/narrative/scenes",
+    tags=["narrative-scenes"]
+)
+
+
+# =============================================================================
+# CREATE
+# =============================================================================
+
+@router.post("/", response_model=SceneResponse, status_code=status.HTTP_201_CREATED)
+async def create_scene(scene_data: SceneCreate):
+    """
+    สร้าง scene ใหม่
+    
+    - **project_id**: รหัสโปรเจ็ค (required)
+    - **chapter_number**: เลขบท 1-3 (required)
+    - **point_number**: เลขจุดเรื่อง 1-15 (required)
+    - **scene_number**: ลำดับ scene ในจุดนั้นๆ (required)
+    - **title**: ชื่อ scene (required)
+    - **location**: สถานที่ (optional)
+    - **time_of_day**: เวลา (optional)
+    - **description**: คำอธิบาย scene (optional)
+    """
+    # Verify project exists
+    project = await Project.find_one({"project_id": scene_data.project_id})
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{scene_data.project_id}' not found"
+        )
+    
+    # Check if scene with same chapter/point/scene number already exists
+    existing = await Scene.find_one({
+        "project_id": scene_data.project_id,
+        "chapter_number": scene_data.chapter_number,
+        "point_number": scene_data.point_number,
+        "scene_number": scene_data.scene_number
+    })
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Scene {scene_data.chapter_number}.{scene_data.point_number}.{scene_data.scene_number} already exists in project '{scene_data.project_id}'"
+        )
+    
+    # Create new scene
+    scene = Scene(
+        **scene_data.model_dump(),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    await scene.insert()
+    
+    return SceneResponse(
+        _id=str(scene.id),
+        **scene.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# READ
+# =============================================================================
+
+@router.get("/", response_model=List[SceneResponse])
+async def list_scenes(
+    project_id: str = Query(..., description="รหัสโปรเจ็ค (required)"),
+    skip: int = Query(0, ge=0, description="จำนวนรายการที่จะข้าม"),
+    limit: int = Query(100, ge=1, le=500, description="จำนวนรายการสูงสุด"),
+    chapter_number: Optional[int] = Query(None, ge=1, le=3, description="กรองตามบท"),
+    point_number: Optional[int] = Query(None, ge=1, le=15, description="กรองตามจุดเรื่อง"),
+    location: Optional[str] = Query(None, description="กรองตามสถานที่"),
+    time_of_day: Optional[str] = Query(None, description="กรองตามเวลา")
+):
+    """
+    แสดงรายการ scenes ทั้งหมดของโปรเจ็ค
+    
+    รองรับการกรอง:
+    - **project_id**: รหัสโปรเจ็ค (required)
+    - **chapter_number**: บทที่ 1-3
+    - **point_number**: จุดเรื่อง 1-15
+    - **location**: สถานที่
+    - **time_of_day**: เวลา (morning, afternoon, evening, night)
+    """
+    query = {"project_id": project_id}
+    
+    if chapter_number is not None:
+        query["chapter_number"] = chapter_number
+    
+    if point_number is not None:
+        query["point_number"] = point_number
+    
+    if location:
+        query["location"] = {"$regex": location, "$options": "i"}
+    
+    if time_of_day:
+        query["time_of_day"] = time_of_day
+    
+    scenes = await Scene.find(query).skip(skip).limit(limit).to_list()
+    
+    return [
+        SceneResponse(
+            _id=str(s.id),
+            **s.model_dump(exclude={"id"})
+        )
+        for s in scenes
+    ]
+
+
+@router.get("/{scene_id}", response_model=SceneResponse)
+async def get_scene(scene_id: str):
+    """
+    ดึงข้อมูล scene ตาม MongoDB _id
+    
+    - **scene_id**: MongoDB ObjectId ของ scene
+    """
+    try:
+        scene = await Scene.get(scene_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    if not scene:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    return SceneResponse(
+        _id=str(scene.id),
+        **scene.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# UPDATE
+# =============================================================================
+
+@router.put("/{scene_id}", response_model=SceneResponse)
+async def update_scene(
+    scene_id: str,
+    scene_data: SceneUpdate
+):
+    """
+    อัปเดตข้อมูล scene
+    
+    - **scene_id**: MongoDB ObjectId ของ scene
+    - อัปเดตเฉพาะฟิลด์ที่ส่งมาเท่านั้น
+    """
+    try:
+        scene = await Scene.get(scene_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    if not scene:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    # Update only provided fields
+    update_data = scene_data.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update"
+        )
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in update_data.items():
+        setattr(scene, field, value)
+    
+    await scene.save()
+    
+    return SceneResponse(
+        _id=str(scene.id),
+        **scene.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# DELETE
+# =============================================================================
+
+@router.delete("/{scene_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_scene(scene_id: str):
+    """
+    ลบ scene
+    
+    - **scene_id**: MongoDB ObjectId ของ scene
+    - ⚠️ คำเตือน: จะลบ shots และ visuals ที่เกี่ยวข้องทั้งหมด
+    """
+    try:
+        scene = await Scene.get(scene_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    if not scene:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Scene '{scene_id}' not found"
+        )
+    
+    # TODO: Cascade delete
+    # - Delete all shots in this scene
+    # - Delete all visuals in shots of this scene
+    
+    await scene.delete()
+    
+    return None
+
+
+# =============================================================================
+# UTILITY ENDPOINTS
+# =============================================================================
+
+@router.get("/by-project/{project_id}/summary")
+async def get_scenes_summary(project_id: str):
+    """
+    สรุปข้อมูล scenes ของโปรเจ็ค
+    
+    Returns:
+    - จำนวน scenes แยกตามบท
+    - จำนวน scenes แยกตามเวลา
+    - จำนวน scenes แยกตามสถานที่
+    """
+    scenes = await Scene.find({"project_id": project_id}).to_list()
+    
+    if not scenes:
+        return {
+            "project_id": project_id,
+            "total_scenes": 0,
+            "by_chapter": {},
+            "by_time_of_day": {},
+            "by_location": {},
+            "locations": []
+        }
+    
+    # Count by chapter
+    by_chapter = {}
+    for scene in scenes:
+        chapter = scene.chapter_number
+        by_chapter[chapter] = by_chapter.get(chapter, 0) + 1
+    
+    # Count by time_of_day
+    by_time = {}
+    for scene in scenes:
+        time = scene.time_of_day
+        by_time[time] = by_time.get(time, 0) + 1
+    
+    # Count by location
+    by_location = {}
+    locations = set()
+    for scene in scenes:
+        loc = scene.location
+        by_location[loc] = by_location.get(loc, 0) + 1
+        locations.add(loc)
+    
+    return {
+        "project_id": project_id,
+        "total_scenes": len(scenes),
+        "by_chapter": by_chapter,
+        "by_time_of_day": by_time,
+        "by_location": by_location,
+        "locations": sorted(list(locations))
+    }
+
+
+@router.get("/by-project/{project_id}/sequence")
+async def get_scenes_sequence(project_id: str):
+    """
+    แสดงลำดับ scenes ทั้งหมดของโปรเจ็ค
+    
+    เรียงตาม: chapter_number → point_number → scene_number
+    """
+    scenes = await Scene.find({"project_id": project_id}).to_list()
+    
+    # Sort by chapter, point, scene
+    scenes.sort(key=lambda s: (s.chapter_number, s.point_number, s.scene_number))
+    
+    sequence = []
+    for scene in scenes:
+        sequence.append({
+            "scene_id": str(scene.id),  # ใช้ MongoDB _id
+            "chapter": scene.chapter_number,
+            "point": scene.point_number,
+            "scene": scene.scene_number,
+            "location": scene.location,
+            "time_of_day": scene.time_of_day,
+            "description": scene.description[:100] + "..." if scene.description and len(scene.description) > 100 else scene.description
+        })
+    
+    return {
+        "project_id": project_id,
+        "total_scenes": len(sequence),
+        "sequence": sequence
+    }
+
+
+@router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "ok",
+        "service": "narrative-scenes",
+        "timestamp": datetime.utcnow().isoformat()
+    }

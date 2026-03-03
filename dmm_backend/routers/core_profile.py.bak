@@ -1,0 +1,478 @@
+"""
+Core Profile Router - Advanced Buddhist Psychology API
+
+Provides comprehensive endpoints for managing CoreProfile:
+- CharacterStatus (spiritual development)
+- LifeEssence (life force & blueprint)
+- PsychologicalMatrix (mental structure)
+- SpiritualAssets (kamma & virtues)
+"""
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel, Field
+
+from documents import CoreProfile, DigitalMindModel
+
+router = APIRouter(prefix="/api/v1/core-profile", tags=["Core Profile"])
+
+
+# ============================================================
+# Request/Response Models
+# ============================================================
+
+class CoreProfileResponse(BaseModel):
+    """Complete CoreProfile response"""
+    model_id: str
+    CoreProfile: Dict[str, Any]
+    spiritual_score: float
+    is_noble: bool
+    last_updated: datetime
+
+
+class CharacterStatusUpdate(BaseModel):
+    """Update character status"""
+    type: Optional[str] = None
+    stage: Optional[str] = None
+    path_stage: Optional[str] = None
+
+
+class LifeEssenceUpdate(BaseModel):
+    """Update life essence"""
+    age_in_years: Optional[int] = None
+    current_jivitindriya: Optional[float] = Field(None, ge=0, le=100)
+
+
+class AnusayaUpdate(BaseModel):
+    """Update anusaya kilesa levels"""
+    kama_raga: Optional[float] = Field(None, ge=0, le=10)
+    patigha: Optional[float] = Field(None, ge=0, le=10)
+    mana: Optional[float] = Field(None, ge=0, le=10)
+    ditthi: Optional[float] = Field(None, ge=0, le=10)
+    vicikiccha: Optional[float] = Field(None, ge=0, le=10)
+    bhava_raga: Optional[float] = Field(None, ge=0, le=10)
+    avijja: Optional[float] = Field(None, ge=0, le=10)
+
+
+class ParamiUpdate(BaseModel):
+    """Update specific pāramī"""
+    parami_name: str = Field(..., description="dana, sila, nekkhamma, etc.")
+    level: Optional[int] = Field(None, ge=0, le=10)
+    exp: Optional[int] = Field(None, ge=0)
+
+
+class FetterBreakRequest(BaseModel):
+    """Request to break a fetter"""
+    fetter_name: str = Field(
+        ...,
+        description="Fetter to break: sakkayaditthi, vicikiccha, silabbataparamasa, kamaraga, patigha, ruparaga, aruparaga, mana, uddhacca, avijja"
+    )
+
+
+# ============================================================
+# Core Profile Endpoints
+# ============================================================
+
+@router.get("/{model_id}", response_model=CoreProfileResponse)
+async def get_core_profile(model_id: str):
+    """
+    Get complete CoreProfile for a model
+    
+    Returns:
+    - Full CoreProfile structure
+    - Spiritual development score
+    - Noble status
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    
+    return CoreProfileResponse(
+        model_id=model.model_id,
+        CoreProfile=profile.model_dump(),
+        spiritual_score=profile.get_overall_spiritual_score(),
+        is_noble=profile.is_noble(),
+        last_updated=profile.last_updated
+    )
+
+
+@router.get("/{model_id}/character-status")
+async def get_character_status(model_id: str):
+    """Get CharacterStatus component"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    return {
+        "model_id": model_id,
+        "CharacterStatus": profile.CharacterStatus.model_dump(),
+        "is_noble": profile.is_noble(),
+        "fetters_broken_count": len(profile.CharacterStatus.fetters_broken),
+        "fetters_remaining_count": len(profile.CharacterStatus.fetters_remaining)
+    }
+
+
+@router.patch("/{model_id}/character-status")
+async def update_character_status(model_id: str, update: CharacterStatusUpdate):
+    """Update CharacterStatus"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    
+    if update.type:
+        profile.CharacterStatus.type = update.type
+    if update.stage:
+        profile.CharacterStatus.stage = update.stage
+    if update.path_stage:
+        profile.CharacterStatus.path_stage = update.path_stage
+    
+    model.update_core_profile({})  # Sync changes
+    await model.save()
+    
+    return {
+        "success": True,
+        "model_id": model_id,
+        "updated_status": profile.CharacterStatus.model_dump()
+    }
+
+
+@router.get("/{model_id}/life-essence")
+async def get_life_essence(model_id: str):
+    """Get LifeEssence component"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    life_essence = profile.LifeEssence
+    
+    return {
+        "model_id": model_id,
+        "LifeEssence": life_essence.model_dump(),
+        "life_percentage": life_essence.jivitindriya_mechanics.current_jivitindriya,
+        "age": life_essence.age_in_years,
+        "lifespan_remaining": (
+            life_essence.LifeBlueprint_Vipaka.lifespan_potential - life_essence.age_in_years
+        )
+    }
+
+
+@router.patch("/{model_id}/life-essence")
+async def update_life_essence(model_id: str, update: LifeEssenceUpdate):
+    """Update LifeEssence"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    life_essence = profile.LifeEssence
+    
+    if update.age_in_years is not None:
+        life_essence.age_in_years = update.age_in_years
+    
+    if update.current_jivitindriya is not None:
+        life_essence.jivitindriya_mechanics.current_jivitindriya = update.current_jivitindriya
+    
+    model.update_core_profile({})
+    await model.save()
+    
+    return {
+        "success": True,
+        "model_id": model_id,
+        "updated_life_essence": life_essence.model_dump()
+    }
+
+
+@router.get("/{model_id}/psychological-matrix")
+async def get_psychological_matrix(model_id: str):
+    """Get PsychologicalMatrix component"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    matrix = profile.PsychologicalMatrix
+    
+    # Calculate average kilesa level
+    anusaya = matrix.LatentTendencies.anusaya_kilesa
+    avg_kilesa = sum(v["level"] for v in anusaya.values()) / len(anusaya)
+    
+    return {
+        "model_id": model_id,
+        "PsychologicalMatrix": matrix.model_dump(),
+        "average_kilesa_level": round(avg_kilesa, 2),
+        "dominant_temperament": matrix.DominantTemperament.primary_carita,
+        "mental_suffering_threshold": matrix.VedanaToleranceProfile.mental_suffering_threshold.total_threshold
+    }
+
+
+@router.patch("/{model_id}/anusaya")
+async def update_anusaya(model_id: str, update: AnusayaUpdate):
+    """
+    Update Anusaya kilesa levels
+    
+    Updates one or more of the 7 latent tendencies:
+    - kama_raga: Sensual desire
+    - patigha: Aversion
+    - mana: Conceit
+    - ditthi: Wrong view
+    - vicikiccha: Doubt
+    - bhava_raga: Craving for existence
+    - avijja: Ignorance
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    anusaya = profile.PsychologicalMatrix.LatentTendencies.anusaya_kilesa
+    
+    # Update provided kilesa levels
+    update_dict = update.model_dump(exclude_none=True)
+    for kilesa_name, level in update_dict.items():
+        if kilesa_name in anusaya:
+            anusaya[kilesa_name]["level"] = level
+    
+    model.update_core_profile({})
+    await model.save()
+    
+    return {
+        "success": True,
+        "model_id": model_id,
+        "updated_anusaya": anusaya
+    }
+
+
+@router.get("/{model_id}/spiritual-assets")
+async def get_spiritual_assets(model_id: str):
+    """Get SpiritualAssets component"""
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    assets = profile.SpiritualAssets
+    
+    # Calculate total kamma balance
+    kamma_balance = (
+        assets.KammaLedger.kusala_stock_points - 
+        assets.KammaLedger.akusala_stock_points
+    )
+    
+    # Calculate average pāramī level
+    parami_dict = assets.VirtueEngine.Paramī_Portfolio.perfections
+    avg_parami = sum(p.level for p in parami_dict.values()) / len(parami_dict)
+    
+    return {
+        "model_id": model_id,
+        "SpiritualAssets": assets.model_dump(),
+        "kamma_balance": kamma_balance,
+        "average_parami_level": round(avg_parami, 2),
+        "sati_level": assets.VirtueEngine.Sati_mastery.level,
+        "panna_level": assets.VirtueEngine.Panna_mastery.level
+    }
+
+
+@router.patch("/{model_id}/parami")
+async def update_parami(model_id: str, update: ParamiUpdate):
+    """
+    Update specific Pāramī (perfection)
+    
+    10 Pāramī:
+    - dana (generosity)
+    - sila (virtue)
+    - nekkhamma (renunciation)
+    - panna (wisdom)
+    - viriya (energy)
+    - khanti (patience)
+    - sacca (truthfulness)
+    - adhitthana (determination)
+    - metta (loving-kindness)
+    - upekkha (equanimity)
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    parami_dict = profile.SpiritualAssets.VirtueEngine.Paramī_Portfolio.perfections
+    
+    if update.parami_name not in parami_dict:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid pāramī name. Must be one of: {', '.join(parami_dict.keys())}"
+        )
+    
+    parami = parami_dict[update.parami_name]
+    
+    if update.level is not None:
+        parami.level = update.level
+    if update.exp is not None:
+        parami.exp = update.exp
+    
+    # Update mastery percentage
+    parami.mastery_percentage = min((parami.level / 10) * 100, 100)
+    
+    model.update_core_profile({})
+    await model.save()
+    
+    return {
+        "success": True,
+        "model_id": model_id,
+        "parami_name": update.parami_name,
+        "updated_parami": parami.model_dump()
+    }
+
+
+@router.post("/{model_id}/break-fetter")
+async def break_fetter(model_id: str, request: FetterBreakRequest):
+    """
+    Break a samyojana (fetter)
+    
+    10 Fetters:
+    1-3 (Sotāpanna): sakkayaditthi, vicikiccha, silabbataparamasa
+    4-5 (Sakadāgāmī/Anāgāmī): kamaraga, patigha
+    6-10 (Arahant): ruparaga, aruparaga, mana, uddhacca, avijja
+    
+    Breaking fetters automatically updates CharacterStatus
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    success = await model.break_fetter(request.fetter_name)
+    
+    if not success:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Fetter '{request.fetter_name}' already broken or invalid"
+        )
+    
+    profile = model.get_core_profile()
+    
+    return {
+        "success": True,
+        "model_id": model_id,
+        "broken_fetter": request.fetter_name,
+        "total_fetters_broken": len(profile.CharacterStatus.fetters_broken),
+        "updated_character_status": profile.CharacterStatus.model_dump(),
+        "is_noble": profile.is_noble(),
+        "spiritual_score": profile.get_overall_spiritual_score()
+    }
+
+
+@router.get("/{model_id}/spiritual-score")
+async def get_spiritual_score(model_id: str):
+    """
+    Calculate comprehensive spiritual development score (0-100)
+    
+    Based on:
+    - Character stage (40 points)
+    - Pāramī development (30 points)
+    - Kilesa reduction (30 points)
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    score = profile.get_overall_spiritual_score()
+    
+    # Breakdown
+    stage_scores = {
+        "Puthujjana": 0,
+        "Sotāpanna": 25,
+        "Sakadāgāmī": 30,
+        "Anāgāmī": 35,
+        "Arahant": 40
+    }
+    stage_score = stage_scores.get(profile.character_status.type, 0)
+    
+    parami_dict = profile.spiritual_assets.virtue_engine.parami_portfolio.perfections
+    parami_avg = sum(p.level for p in parami_dict.values()) / 10
+    parami_score = (parami_avg / 10) * 30
+    
+    anusaya = profile.psychological_matrix.latent_tendencies.anusaya_kilesa
+    kilesa_avg = sum(v["level"] for v in anusaya.values()) / 7
+    kilesa_score = ((10 - kilesa_avg) / 10) * 30
+    
+    return {
+        "model_id": model_id,
+        "total_score": score,
+        "breakdown": {
+            "character_stage_score": round(stage_score, 2),
+            "parami_score": round(parami_score, 2),
+            "kilesa_reduction_score": round(kilesa_score, 2)
+        },
+        "character_type": profile.character_status.type,
+        "is_noble": profile.is_noble(),
+        "fetters_broken": len(profile.CharacterStatus.fetters_broken),
+        "average_parami_level": round(parami_avg, 2),
+        "average_kilesa_level": round(kilesa_avg, 2)
+    }
+
+
+@router.get("/{model_id}/progress-summary")
+async def get_progress_summary(model_id: str):
+    """
+    Get comprehensive progress summary
+    
+    Shows:
+    - Spiritual development
+    - Life status
+    - Mental defilements
+    - Virtue development
+    """
+    model = await DigitalMindModel.find_one(DigitalMindModel.model_id == model_id)
+    if not model:
+        raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
+    
+    profile = model.get_core_profile()
+    
+    return {
+        "model_id": model_id,
+        "model_name": model.name,
+        "spiritual_development": {
+            "character_type": profile.CharacterStatus.type,
+            "stage": profile.CharacterStatus.stage,
+            "is_noble": profile.is_noble(),
+            "fetters_broken": profile.CharacterStatus.fetters_broken,
+            "fetters_remaining": profile.CharacterStatus.fetters_remaining,
+            "spiritual_score": profile.get_overall_spiritual_score()
+        },
+        "life_status": {
+            "age": profile.LifeEssence.age_in_years,
+            "life_force_percentage": profile.LifeEssence.jivitindriya_mechanics.current_jivitindriya,
+            "lifespan_potential": profile.LifeEssence.LifeBlueprint_Vipaka.lifespan_potential,
+            "birth_realm": profile.LifeEssence.LifeBlueprint_Vipaka.birth_bhumi
+        },
+        "psychological_profile": {
+            "dominant_temperament": profile.PsychologicalMatrix.DominantTemperament.primary_carita,
+            "anusaya_kilesa": profile.PsychologicalMatrix.LatentTendencies.anusaya_kilesa,
+            "mental_suffering_threshold": profile.PsychologicalMatrix.VedanaToleranceProfile.mental_suffering_threshold.total_threshold
+        },
+        "spiritual_assets": {
+            "kamma_balance": (
+                profile.SpiritualAssets.KammaLedger.kusala_stock_points -
+                profile.SpiritualAssets.KammaLedger.akusala_stock_points
+            ),
+            "sati_level": profile.SpiritualAssets.VirtueEngine.Sati_mastery.level,
+            "panna_level": profile.SpiritualAssets.VirtueEngine.Panna_mastery.level,
+            "top_parami": sorted(
+                [
+                    {"name": k, "level": v.level, "exp": v.exp}
+                    for k, v in profile.SpiritualAssets.VirtueEngine.Paramī_Portfolio.perfections.items()
+                ],
+                key=lambda x: x["level"],
+                reverse=True
+            )[:3]
+        },
+        "last_updated": profile.last_updated
+    }

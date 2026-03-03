@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+motor
+beanie
+python-dotenv
+python-json-logger
+passlib
+python-multipart

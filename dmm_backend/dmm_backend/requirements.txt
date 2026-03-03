@@ -1,0 +1,30 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+motor
+python-dotenv
+python-json-logger
+prometheus-client
+beanie
+slowapi
+mongomock_motor
+psutil  # For system metrics in health checks
+networkx
+
+# AI Image Generation (Stable Diffusion)
+requests
+Pillow
+openai
+
+# Authentication (Phase 2)
+fastapi-users[beanie]
+fastapi-users-db-beanie
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# Testing
+pytest
+pytest-asyncio
+httpx

@@ -1,0 +1,65 @@
+/Users/surasak.peace/Desktop/peace script model v1.4/dmm_backend/venv/lib/python3.9/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+
+================================================================================
+CUSTOM PRESETS API TESTING - 23 Endpoints
+================================================================================
+✅ Backend is running
+
+================================================================================
+TESTING: Preset Templates (3 endpoints)
+================================================================================
+✅ GET    /templates                                         200 | Total: 8, Returned: 5
+✅ GET    /templates/{{id}}                                  200 | Name: Close-up Emotional
+❌ POST   /templates                                         422 | Expected auth error, got: 422
+
+================================================================================
+TESTING: User Presets CRUD (5 endpoints)
+================================================================================
+❌ GET    /user                                              500 | List user presets
+❌ GET    /user/preset123                                    500 | Get preset detail
+❌ POST   /user                                              422 | Create preset
+❌ PUT    /user/preset123                                    500 | Update preset
+❌ DELETE /user/preset123                                    500 | Delete preset
+
+================================================================================
+TESTING: Extended Operations (3 endpoints)
+================================================================================
+❌ POST   /user/preset123/duplicate                          500 | Duplicate preset
+❌ POST   /user/preset123/favorite                           500 | Toggle favorite
+✅ POST   /batch                                             404 | Batch operation
+
+================================================================================
+TESTING: Collections (4 endpoints)
+================================================================================
+❌ GET    /collections                                       500 | List collections
+❌ POST   /collections                                       400 | Create collection
+❌ PUT    /collections/col123                                500 | Update collection
+❌ DELETE /collections/col123                                500 | Delete collection
+
+================================================================================
+TESTING: Usage & Analytics (2 endpoints)
+================================================================================
+❌ POST   /usage                                             422 | Log usage
+❌ GET    /statistics                                        404 | Get statistics
+
+================================================================================
+TESTING: Sharing (4 endpoints)
+================================================================================
+❌ POST   /share                                             422 | Share preset
+✅ GET    /shared/share123                                   404 | Get shared preset
+✅ PUT    /shared/share123                                   404 | Update share
+✅ DELETE /shared/share123                                   404 | Delete share
+
+================================================================================
+TESTING: Import/Export (2 endpoints)
+================================================================================
+❌ POST   /export                                            422 | Export presets
+✅ POST   /import                                            200 | Import presets
+
+================================================================================
+TESTING COMPLETE
+================================================================================
+
+Note: Auth errors (401/403) are expected for endpoints requiring authentication
+404 errors are expected for non-existent resources (preset123, col123, share123)

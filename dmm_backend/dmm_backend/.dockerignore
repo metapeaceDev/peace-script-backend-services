@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env
+env/
+venv/
+.git/
+.gitignore
+.mypy_cache/
+.pytest_cache/
+__pycache__
+# Node artifacts for embedded dashboards
+node_modules/
+
+# Local data or secrets
+*.log
+*.sqlite3

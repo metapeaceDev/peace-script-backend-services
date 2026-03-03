@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dmm_backend"
+version = "1.5.0"
+description = "Digital Mind Model API"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "fastapi",
+    "fastapi-users[beanie]",
+    "fastapi-users-db-beanie",
+    "uvicorn[standard]",
+    "motor",
+    "beanie",
+    "pydantic-settings",
+    "python-dotenv",
+    "httpx",
+    "openai",
+    "pytest",
+    "pytest-asyncio",
+    "mongomock_motor",
+    "networkx",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["dmm_backend"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+]

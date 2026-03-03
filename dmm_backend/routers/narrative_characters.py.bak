@@ -1,0 +1,295 @@
+"""
+NarrativeStructure Character Router
+
+This module implements CRUD operations for screenplay characters.
+Characters are essential elements that drive the narrative forward.
+
+Author: Peace Script Team
+Date: 25 October 2025
+Version: 1.0
+"""
+
+from fastapi import APIRouter, HTTPException, status, Query
+from beanie import PydanticObjectId
+from typing import List, Optional
+from datetime import datetime
+
+from documents_narrative import Character, Project
+from schemas_narrative import CharacterCreate, CharacterUpdate, CharacterResponse
+
+
+router = APIRouter(
+    prefix="/api/narrative/characters",
+    tags=["narrative-characters"]
+)
+
+
+# =============================================================================
+# CREATE
+# =============================================================================
+
+@router.post("/", response_model=CharacterResponse, status_code=status.HTTP_201_CREATED)
+async def create_character(character_data: CharacterCreate):
+    """
+    สร้างตัวละครใหม่
+    
+    - **project_id**: รหัสโปรเจ็ค (required)
+    - **character_name**: ชื่อตัวละคร (required)
+    - **age**: อายุ (required)
+    - **gender**: เพศ (required)
+    - **role**: บทบาท (required)
+    - **description**: คำอธิบาย (optional)
+    """
+    # Verify project exists
+    project = await Project.find_one({"project_id": character_data.project_id})
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project '{character_data.project_id}' not found"
+        )
+    
+    # Check if character with same name already exists in project
+    existing = await Character.find_one({
+        "project_id": character_data.project_id,
+        "name": character_data.name
+    })
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Character '{character_data.name}' already exists in project '{character_data.project_id}'"
+        )
+    
+    # Create new character
+    character = Character(
+        **character_data.dict(),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    await character.insert()
+    
+    return CharacterResponse(
+        _id=str(character.id),
+        **character.dict(exclude={"id"})
+    )
+
+
+# =============================================================================
+# READ
+# =============================================================================
+
+@router.get("/", response_model=List[CharacterResponse])
+async def list_characters(
+    project_id: str = Query(..., description="รหัสโปรเจ็ค (required)"),
+    skip: int = Query(0, ge=0, description="จำนวนรายการที่จะข้าม"),
+    limit: int = Query(100, ge=1, le=500, description="จำนวนรายการสูงสุด"),
+    role: Optional[str] = Query(None, description="กรองตามบทบาท"),
+    gender: Optional[str] = Query(None, description="กรองตามเพศ"),
+    age_min: Optional[int] = Query(None, ge=0, description="อายุขั้นต่ำ"),
+    age_max: Optional[int] = Query(None, le=120, description="อายุสูงสุด")
+):
+    """
+    แสดงรายการตัวละครทั้งหมดของโปรเจ็ค
+    
+    รองรับการกรอง:
+    - **project_id**: รหัสโปรเจ็ค (required)
+    - **role**: บทบาท (protagonist, antagonist, supporting, etc.)
+    - **gender**: เพศ
+    - **age_min**: อายุขั้นต่ำ
+    - **age_max**: อายุสูงสุด
+    """
+    query = {"project_id": project_id}
+    
+    if role:
+        query["role"] = role
+    
+    if gender:
+        query["gender"] = gender
+    
+    if age_min is not None or age_max is not None:
+        age_query = {}
+        if age_min is not None:
+            age_query["$gte"] = age_min
+        if age_max is not None:
+            age_query["$lte"] = age_max
+        if age_query:
+            query["age"] = age_query
+    
+    characters = await Character.find(query).skip(skip).limit(limit).to_list()
+    
+    return [
+        CharacterResponse(
+            _id=str(c.id),
+            **c.dict(exclude={"id"})
+        )
+        for c in characters
+    ]
+
+
+@router.get("/{character_id}", response_model=CharacterResponse)
+async def get_character(character_id: str):
+    """
+    ดึงข้อมูลตัวละครตาม MongoDB _id
+    
+    - **character_id**: MongoDB ObjectId ของตัวละคร
+    """
+    try:
+        character = await Character.get(character_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    if not character:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    return CharacterResponse(
+        _id=str(character.id),
+        **character.dict(exclude={"id"})
+    )
+
+
+# =============================================================================
+# UPDATE
+# =============================================================================
+
+@router.put("/{character_id}", response_model=CharacterResponse)
+async def update_character(
+    character_id: str,
+    character_data: CharacterUpdate
+):
+    """
+    อัปเดตข้อมูลตัวละคร
+    
+    - **character_id**: MongoDB ObjectId ของตัวละคร
+    - อัปเดตเฉพาะฟิลด์ที่ส่งมาเท่านั้น
+    """
+    try:
+        character = await Character.get(character_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    if not character:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    # Update only provided fields
+    update_data = character_data.dict(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update"
+        )
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in update_data.items():
+        setattr(character, field, value)
+    
+    await character.save()
+    
+    return CharacterResponse(
+        _id=str(character.id),
+        **character.dict(exclude={"id"})
+    )
+
+
+# =============================================================================
+# DELETE
+# =============================================================================
+
+@router.delete("/{character_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_character(character_id: str):
+    """
+    ลบตัวละคร
+    
+    - **character_id**: MongoDB ObjectId ของตัวละคร
+    - ⚠️ คำเตือน: จะลบข้อมูลตัวละครทั้งหมด
+    """
+    try:
+        character = await Character.get(character_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    if not character:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Character '{character_id}' not found"
+        )
+    
+    await character.delete()
+    
+    return None
+
+
+# =============================================================================
+# UTILITY ENDPOINTS
+# =============================================================================
+
+@router.get("/by-project/{project_id}/summary")
+async def get_characters_summary(project_id: str):
+    """
+    สรุปข้อมูลตัวละครของโปรเจ็ค
+    
+    Returns:
+    - จำนวนตัวละครแยกตามบทบาท
+    - จำนวนตัวละครแยกตามเพศ
+    - อายุเฉลี่ย
+    """
+    characters = await Character.find({"project_id": project_id}).to_list()
+    
+    if not characters:
+        return {
+            "project_id": project_id,
+            "total_characters": 0,
+            "by_role": {},
+            "by_gender": {},
+            "average_age": 0
+        }
+    
+    # Count by role
+    by_role = {}
+    for char in characters:
+        role = char.role
+        by_role[role] = by_role.get(role, 0) + 1
+    
+    # Count by gender
+    by_gender = {}
+    for char in characters:
+        gender = char.gender
+        by_gender[gender] = by_gender.get(gender, 0) + 1
+    
+    # Calculate average age
+    total_age = sum(char.age for char in characters)
+    average_age = round(total_age / len(characters), 1)
+    
+    return {
+        "project_id": project_id,
+        "total_characters": len(characters),
+        "by_role": by_role,
+        "by_gender": by_gender,
+        "average_age": average_age
+    }
+
+
+@router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "ok",
+        "service": "narrative-characters",
+        "timestamp": datetime.utcnow().isoformat()
+    }

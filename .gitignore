@@ -32,5 +32,10 @@ env/
 
 # OS junk
 .DS_Store
-Thumbs.db
+Thums.db
 Desktop.ini
+
+# Large data files (ChromaDB, embeddings, knowledge base)
+jitta-assistant/data/*.sqlite3
+jitta-assistant/data/knowledge/
+dmm_backend/backups/*.tar.gz

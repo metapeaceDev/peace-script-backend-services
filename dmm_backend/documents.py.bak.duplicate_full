@@ -1,0 +1,69 @@
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from beanie import Document
+from pydantic import BaseModel, Field
+
+# --- Re-usable Pydantic Models for nesting --- #
+
+class StimulusObject(BaseModel):
+    type: str
+    source: str
+    intensity: float
+    details: str
+
+class ConflictAnalysis(BaseModel):
+    initial_kilesa_force: float
+    final_kilesa_force: float
+    parami_force: float
+    sati_intervened: bool
+    panna_intervened: bool
+
+class ReactionOutcome(BaseModel):
+    resulting_citta: str
+    is_wholesome: bool
+    conflict_analysis: ConflictAnalysis
+
+class ProfileChange(BaseModel):
+    target: str
+    change: str
+
+class Consequence(BaseModel):
+    new_kamma_id: Optional[str] = None
+    profile_changes: List[ProfileChange]
+
+# --- Beanie Document Models --- #
+
+class DigitalMindModel(Document):
+    model_id: str
+    name: str
+    status_label: str
+    overall_level: int
+    level_progress_percent: float
+    image_url: str
+    core_state: Dict[str, Any]
+    conscious_profile: Dict[str, Any]
+    kamma_profile: Dict[str, Any]
+
+    class Settings:
+        name = "digital_mind_models"
+
+class KammaLogEntry(Document):
+    model_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    event_type: str
+    description: str
+    impact_level: int
+    context: Dict[str, Any]
+
+    class Settings:
+        name = "kamma_logs"
+
+class TrainingLog(Document):
+    model_id: str
+    training_type: str
+    date: datetime = Field(default_factory=datetime.utcnow)
+    details: Dict[str, Any]
+
+    class Settings:
+        name = "training_logs"

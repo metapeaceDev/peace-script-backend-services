@@ -1,0 +1,268 @@
+"""
+NarrativeStructure Visual Router
+
+This module implements CRUD operations for visual descriptions.
+Visuals define the detailed visual storytelling elements within shots.
+
+Author: Peace Script Team
+Date: 25 October 2025
+Version: 1.0
+"""
+
+from fastapi import APIRouter, HTTPException, status, Query
+from beanie import PydanticObjectId
+from typing import List, Optional
+from datetime import datetime
+
+from documents_narrative import Visual, Shot
+from schemas_narrative import VisualCreate, VisualUpdate, VisualResponse
+
+
+router = APIRouter(
+    prefix="/api/narrative/visuals",
+    tags=["narrative-visuals"]
+)
+
+
+# =============================================================================
+# CREATE
+# =============================================================================
+
+@router.post("/", response_model=VisualResponse, status_code=status.HTTP_201_CREATED)
+async def create_visual(visual_data: VisualCreate):
+    """
+    สร้าง visual ใหม่
+    
+    - **shot_id**: MongoDB ObjectId ของ shot (required)
+    - **visual_type**: ประเภท visual (required)
+    - **description**: คำอธิบาย visual (required)
+    """
+    # Verify shot exists
+    try:
+        shot = await Shot.get(visual_data.shot_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Shot '{visual_data.shot_id}' not found"
+        )
+    
+    if not shot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Shot '{visual_data.shot_id}' not found"
+        )
+    
+    # Create new visual
+    visual = Visual(
+        **visual_data.model_dump(),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    await visual.insert()
+    
+    return VisualResponse(
+        _id=str(visual.id),
+        **visual.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# READ
+# =============================================================================
+
+@router.get("/", response_model=List[VisualResponse])
+async def list_visuals(
+    shot_id: str = Query(..., description="MongoDB ObjectId ของ shot (required)"),
+    skip: int = Query(0, ge=0, description="จำนวนรายการที่จะข้าม"),
+    limit: int = Query(200, ge=1, le=1000, description="จำนวนรายการสูงสุด"),
+    visual_type: Optional[str] = Query(None, description="กรองตามประเภท visual")
+):
+    """
+    แสดงรายการ visuals ทั้งหมดของ shot
+    
+    รองรับการกรอง:
+    - **shot_id**: MongoDB ObjectId ของ shot (required)
+    - **visual_type**: ประเภท visual (composition, lighting, color, etc.)
+    """
+    query = {"shot_id": shot_id}
+    
+    if visual_type:
+        query["visual_type"] = visual_type
+    
+    visuals = await Visual.find(query).skip(skip).limit(limit).to_list()
+    
+    return [
+        VisualResponse(
+            id=str(v.id),
+            **v.model_dump(exclude={"id"})
+        )
+        for v in visuals
+    ]
+
+
+@router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "ok",
+        "service": "narrative-visuals",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+@router.get("/{visual_id}", response_model=VisualResponse)
+async def get_visual(visual_id: str):
+    """
+    ดึงข้อมูล visual ตาม MongoDB _id
+    
+    - **visual_id**: MongoDB ObjectId ของ visual
+    """
+    try:
+        visual = await Visual.get(visual_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    if not visual:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    return VisualResponse(
+        _id=str(visual.id),
+        **visual.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# UPDATE
+# =============================================================================
+
+@router.put("/{visual_id}", response_model=VisualResponse)
+async def update_visual(
+    visual_id: str,
+    visual_data: VisualUpdate
+):
+    """
+    อัปเดตข้อมูล visual
+    
+    - **visual_id**: MongoDB ObjectId ของ visual
+    - อัปเดตเฉพาะฟิลด์ที่ส่งมาเท่านั้น
+    """
+    try:
+        visual = await Visual.get(visual_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    if not visual:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    # Update only provided fields
+    update_data = visual_data.model_dump(exclude_unset=True)
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update"
+        )
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    for field, value in update_data.items():
+        setattr(visual, field, value)
+    
+    await visual.save()
+    
+    return VisualResponse(
+        _id=str(visual.id),
+        **visual.model_dump(exclude={"id"})
+    )
+
+
+# =============================================================================
+# DELETE
+# =============================================================================
+
+@router.delete("/{visual_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_visual(visual_id: str):
+    """
+    ลบ visual
+    
+    - **visual_id**: MongoDB ObjectId ของ visual
+    """
+    try:
+        visual = await Visual.get(visual_id)
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    if not visual:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Visual '{visual_id}' not found"
+        )
+    
+    await visual.delete()
+    
+    return None
+
+
+# =============================================================================
+# UTILITY ENDPOINTS
+# =============================================================================
+
+@router.get("/by-shot/{shot_id}/summary")
+async def get_visuals_summary(shot_id: str):
+    """
+    สรุปข้อมูล visuals ของ shot
+    
+    Returns:
+    - จำนวน visuals แยกตามประเภท
+    - รายการ visuals
+    """
+    visuals = await Visual.find({"shot_id": shot_id}).to_list()
+    
+    if not visuals:
+        return {
+            "shot_id": shot_id,
+            "total_visuals": 0,
+            "by_type": {},
+            "visuals": []
+        }
+    
+    # Count by type
+    by_type = {}
+    for visual in visuals:
+        visual_type = visual.visual_type
+        by_type[visual_type] = by_type.get(visual_type, 0) + 1
+    
+    # Build list
+    visual_list = []
+    for visual in visuals:
+        visual_list.append({
+            "visual_id": str(visual.id),
+            "visual_type": visual.visual_type,
+            "description": visual.description[:50] + "..." if visual.description and len(visual.description) > 50 else visual.description
+        })
+    
+    return {
+        "shot_id": shot_id,
+        "total_visuals": len(visuals),
+        "by_type": by_type,
+        "visuals": visual_list
+    }
+
+
+

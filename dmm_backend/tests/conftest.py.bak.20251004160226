@@ -1,0 +1,120 @@
+import sys
+import os
+import asyncio
+from typing import AsyncGenerator
+
+# Set dummy environment variables for testing BEFORE loading the app and settings
+os.environ["API_KEY"] = "test_api_key"
+os.environ["MONGODB_URI"] = "mongodb://localhost:27017"
+os.environ["MONGODB_DB"] = "test_db"
+
+# Add project root to the Python path to resolve imports
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+import pytest
+from httpx import AsyncClient
+from beanie import init_beanie
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from main import app
+from documents import DigitalMindModel, KammaLogEntry, TrainingLog
+from config import settings
+
+# Mock data for a DigitalMindModel, ensuring it matches the Beanie document structure
+MOCK_DMM = {
+    "model_id": "test_model_001",
+    "name": "Test Model",
+    "status_label": "Stable",
+    "overall_level": 1,
+    "image_url": "http://example.com/image.png",
+    "core_state": {
+        "level_progress": 50,
+        "level_up_threshold": 1000,
+    },
+    "conscious_profile": {
+        "parami_potentials": [
+            {"name": "Dana", "value": 70, "exp": 0, "level": 1},
+            {"name": "Sila", "value": 80, "exp": 0, "level": 1},
+        ]
+    },
+    "kamma_profile": {
+        "latent_tendencies": [
+            {"name": "Lobha", "value": 20},
+            {"name": "Dosa", "value": 15},
+        ]
+    },
+    "core_profile": {
+        "psychological_matrix": {
+            "vedana_tolerance_profile": {
+                "mental_suffering_threshold": {"total_threshold": 10}
+            },
+            "latent_tendencies": {
+                "anusaya_kilesa": {
+                    "patigha": {"level": 5, "value": 50}
+                }
+            }
+        },
+        "spiritual_assets": {
+            "virtue_engine": {
+                "sati_mastery": {"level": 5, "exp": 0},
+                "panna_mastery": {"level": 5, "exp": 0},
+                "paramī_portfolio": {
+                    "perfections": {
+                        "khanti": {"level": 5, "exp": 0},
+                        "upekkha": {"level": 5, "exp": 0}
+                    }
+                }
+            }
+        }
+    }
+}
+
+@pytest.fixture(scope="session")
+def event_loop():
+    """Create an instance of the default event loop for each test session."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+@pytest.fixture(scope="session")
+async def test_db_client() -> AsyncGenerator[AsyncIOMotorClient, None]:
+    """Initialize a test database client."""
+    client = AsyncIOMotorClient(settings.MONGODB_URI)
+    yield client
+    client.close()
+
+@pytest.fixture(scope="session", autouse=True)
+async def test_database(test_db_client: AsyncIOMotorClient):
+    """Initialize the database and collections for testing."""
+    db_name = f"{settings.MONGODB_DB}_test"
+    await init_beanie(
+        database=test_db_client[db_name],
+        document_models=[DigitalMindModel, KammaLogEntry, TrainingLog],
+    )
+    yield
+    await test_db_client.drop_database(db_name)
+
+@pytest.fixture(scope="function", autouse=True)
+async def setup_test_data():
+    """Set up test data for the tests, ensuring all collections are clean."""
+    await KammaLogEntry.delete_all()
+    await TrainingLog.delete_all()
+    await DigitalMindModel.delete_all()
+    
+    test_model = DigitalMindModel(**MOCK_DMM)
+    await test_model.insert()
+    
+    yield
+    
+    await KammaLogEntry.delete_all()
+    await TrainingLog.delete_all()
+    await DigitalMindModel.delete_all()
+
+@pytest.fixture(scope="function")
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    """Create an async client for making API requests."""
+    # Use the app instance imported from our source
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client

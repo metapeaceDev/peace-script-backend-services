@@ -1,0 +1,5 @@
+core
+modules
+sentient-dashboard-frontend
+tests
+venv

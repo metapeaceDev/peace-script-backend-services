@@ -1,0 +1,11 @@
+{
+  "backup_name": "dmm_backup_20251104_203104.tar.gz",
+  "backup_path": "/Users/surasak.peace/Desktop/peace script model v1.4/dmm_backend/backups/dmm_backup_20251104_203104.tar.gz",
+  "timestamp": "2025-11-04T20:31:05.957244",
+  "size_bytes": 668491,
+  "size_human": "652.82 KB",
+  "compressed": true,
+  "checksum": "5262ecb69378a94a254cf4cc629ebf93",
+  "mongodb_uri": "mongodb://localhost:27017/digital_mind_model",
+  "retention_days": 30
+}
